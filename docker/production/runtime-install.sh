@@ -136,22 +136,8 @@ else
     log "Running first-time Bagisto installation (this may take a few minutes)..."
     timeout 1200 php artisan bagisto:install \
         --skip-env-check \
-        --skip-admin-creation \
         --skip-github-star \
         --no-interaction
-
-    log "Creating admin user..."
-    php artisan bagisto:admin \
-        --name="${ADMIN_NAME}" \
-        --email="${ADMIN_EMAIL}" \
-        --password="${ADMIN_PASSWORD}" \
-        --no-interaction 2>/dev/null || \
-    php artisan db:seed \
-        --class="Webkul\\User\\Database\\Seeders\\AdminSeeder" \
-        --no-interaction 2>/dev/null || true
-
-    log "Running indexers..."
-    php artisan index:index --mode=full 2>/dev/null || true
 
     touch storage/installed
     log "First-time installation complete."

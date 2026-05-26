@@ -82,6 +82,10 @@ fi
 log "Running runtime installation checks..."
 bash /usr/local/bin/runtime-install.sh
 
+log "Fixing storage permissions..."
+chown -R www-data:www-data /var/www/bagisto/storage /var/www/bagisto/bootstrap/cache
+chmod -R 775 /var/www/bagisto/storage /var/www/bagisto/bootstrap/cache
+
 log "Starting services via Supervisor..."
 
 # ==========================================================================
