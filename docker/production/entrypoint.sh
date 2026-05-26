@@ -11,25 +11,14 @@ log() {
 }
 
 # ==========================================================================
-# Determine database mode: internal (default) or external
+# External database configuration
 # ==========================================================================
-DB_HOST="${DB_HOST:-127.0.0.1}"
-DB_PORT="${DB_PORT:-3308}"
+DB_HOST="${DB_HOST:-mariadb}"
+DB_PORT="${DB_PORT:-3306}"
 DB_DATABASE="${DB_DATABASE:-bagisto}"
 DB_USERNAME="${DB_USERNAME:-bagisto}"
 DB_PASSWORD="${DB_PASSWORD:-bagisto}"
-
-use_internal_mysql() {
-    [[ "$DB_HOST" == "127.0.0.1" || "$DB_HOST" == "localhost" ]]
-}
-
-if use_internal_mysql; then
-    log "Mode: INTERNAL MySQL"
-    export MYSQL_AUTOSTART=true
-else
-    log "Mode: EXTERNAL MySQL (${DB_HOST}:${DB_PORT})"
-    export MYSQL_AUTOSTART=false
-fi
+log "Mode: EXTERNAL MySQL (${DB_HOST}:${DB_PORT})"
 
 # ==========================================================================
 # Update .env with runtime overrides (if any env vars are passed)
@@ -52,29 +41,27 @@ sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=${DB_PASSWORD}/" .env
 # ==========================================================================
 # Re-cache config if env vars were overridden
 # ==========================================================================
-if [ -n "$APP_URL" ] || [ -n "$DB_HOST" ] && ! use_internal_mysql; then
+if [ -n "$APP_URL" ] || [ -n "$DB_HOST" ]; then
     log "Re-caching configuration after env overrides..."
     php artisan optimize:clear --no-interaction 2>/dev/null || true
     php artisan optimize --no-interaction 2>/dev/null || true
 fi
 
 # ==========================================================================
-# External MySQL: wait for connectivity before Supervisor starts
+# Wait for external MySQL before Supervisor starts
 # ==========================================================================
-if ! use_internal_mysql; then
-    log "Waiting for external MySQL at ${DB_HOST}:${DB_PORT}..."
-    for i in $(seq 1 60); do
-        if php -r "try { new PDO('mysql:host=${DB_HOST};port=${DB_PORT}', '${DB_USERNAME}', '${DB_PASSWORD}'); echo 'ok'; } catch(Exception \$e) { exit(1); }" 2>/dev/null; then
-            log "External MySQL is reachable."
-            break
-        fi
-        if [ "$i" -eq 60 ]; then
-            log "ERROR: Cannot reach external MySQL at ${DB_HOST}:${DB_PORT} after 60s"
-            exit 1
-        fi
-        sleep 1
-    done
-fi
+log "Waiting for external MySQL at ${DB_HOST}:${DB_PORT}..."
+for i in $(seq 1 60); do
+    if php -r "try { new PDO('mysql:host=${DB_HOST};port=${DB_PORT}', '${DB_USERNAME}', '${DB_PASSWORD}'); echo 'ok'; } catch(Exception \$e) { exit(1); }" 2>/dev/null; then
+        log "External MySQL is reachable."
+        break
+    fi
+    if [ "$i" -eq 60 ]; then
+        log "ERROR: Cannot reach external MySQL at ${DB_HOST}:${DB_PORT} after 60s"
+        exit 1
+    fi
+    sleep 1
+done
 
 # ==========================================================================
 # First-run installation (migrations, seeding, admin creation)

@@ -1,7 +1,7 @@
 # =============================================================================
 # Bagisto Production Image
-# Single container: Nginx + PHP 8.3 FPM + MariaDB + Supervisor
-# MariaDB used instead of MySQL — identical protocol, better Docker support
+# App container only: Nginx + PHP 8.3 FPM + Supervisor
+# Database is external (separate MariaDB/MySQL service)
 # =============================================================================
 
 FROM ubuntu:24.04
@@ -31,12 +31,9 @@ RUN set -eux; \
     done
 
 # ---------------------------------------------------------------------------
-# System packages + MariaDB + Nginx + Supervisor
-# policy-rc.d=exit 0 is set once and NEVER restored
+# System packages + Nginx + Supervisor
 # ---------------------------------------------------------------------------
 RUN apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update \
-    && printf '#!/bin/sh\nexit 0\n' > /usr/sbin/policy-rc.d \
-    && chmod +x /usr/sbin/policy-rc.d \
     && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install -y \
         apt-transport-https \
         ca-certificates \
@@ -46,14 +43,9 @@ RUN apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update \
         unzip \
     && add-apt-repository ppa:ondrej/php -y \
     && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update \
-    # Pre-configure MariaDB to use port 3308 so post-install start won't conflict
-    # with any existing MySQL/MariaDB on port 3306 (Coolify host or otherwise)
-    && mkdir -p /etc/mysql/conf.d \
-    && printf '[mysqld]\nport = 3308\nbind-address = 127.0.0.1\n' > /etc/mysql/conf.d/bagisto.cnf \
     && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install -y \
         imagemagick \
         libmagickwand-dev \
-        mariadb-server \
         nginx \
         supervisor \
     && rm -rf /var/lib/apt/lists/*
@@ -115,8 +107,8 @@ RUN composer install \
 # ---------------------------------------------------------------------------
 RUN cp .env.example .env \
     && sed -i 's/^APP_DEBUG=.*/APP_DEBUG=false/' .env \
-    && sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env \
-    && sed -i 's/^DB_PORT=.*/DB_PORT=3308/' .env \
+    && sed -i 's/^DB_HOST=.*/DB_HOST=mariadb/' .env \
+    && sed -i 's/^DB_PORT=.*/DB_PORT=3306/' .env \
     && sed -i 's/^DB_DATABASE=.*/DB_DATABASE=bagisto/' .env \
     && sed -i 's/^DB_USERNAME=.*/DB_USERNAME=bagisto/' .env \
     && sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=bagisto/' .env \
@@ -164,7 +156,7 @@ RUN apt-get autoremove -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 EXPOSE 80
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=5 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=300s --retries=5 \
     CMD curl -fsS http://127.0.0.1/ || exit 1
 
 ENTRYPOINT ["bash", "/usr/local/bin/entrypoint.sh"]
