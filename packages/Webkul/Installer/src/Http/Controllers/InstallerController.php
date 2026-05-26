@@ -88,7 +88,7 @@ class InstallerController extends Controller
 
         $allowedCurrencies = array_unique(
             array_merge(
-                [($appCurrency ?? 'USD')],
+                [($appCurrency ?? 'UGX')],
                 $selectedParameters['allowed_currencies']
             )
         );

@@ -26,11 +26,11 @@ it('should block access to run seeder endpoint when application is already insta
     post(route('installer.run_seeder'), [
         'selectedParameters' => [
             'allowed_locales' => ['en'],
-            'allowed_currencies' => ['USD'],
+            'allowed_currencies' => ['UGX'],
         ],
         'allParameters' => [
             'app_locale' => 'en',
-            'app_currency' => 'USD',
+            'app_currency' => 'UGX',
         ],
     ])
         ->assertRedirect(route('shop.home.index'));
@@ -50,7 +50,7 @@ it('should block access to seed sample products endpoint when application is alr
     // Act and Assert.
     post(route('installer.seed_sample_products'), [
         'selectedLocales' => ['en'],
-        'selectedCurrencies' => ['USD'],
+        'selectedCurrencies' => ['UGX'],
     ])
         ->assertRedirect(route('shop.home.index'));
 });
@@ -77,11 +77,11 @@ it('should return 403 for ajax request to run seeder endpoint when already insta
     post(route('installer.run_seeder'), [
         'selectedParameters' => [
             'allowed_locales' => ['en'],
-            'allowed_currencies' => ['USD'],
+            'allowed_currencies' => ['UGX'],
         ],
         'allParameters' => [
             'app_locale' => 'en',
-            'app_currency' => 'USD',
+            'app_currency' => 'UGX',
         ],
     ], [
         'X-Requested-With' => 'XMLHttpRequest',
@@ -111,7 +111,7 @@ it('should return 403 for ajax request to seed sample products endpoint when alr
     // Act and Assert.
     post(route('installer.seed_sample_products'), [
         'selectedLocales' => ['en'],
-        'selectedCurrencies' => ['USD'],
+        'selectedCurrencies' => ['UGX'],
     ], [
         'X-Requested-With' => 'XMLHttpRequest',
     ])

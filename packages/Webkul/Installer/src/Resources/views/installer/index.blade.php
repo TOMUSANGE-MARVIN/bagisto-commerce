@@ -121,6 +121,7 @@
             'TRY' => 'turkish-lira',
             'TWD' => 'new-taiwan-dollar',
             'UAH' => 'ukrainian-hryvnia',
+            'UGX' => 'ugandan-shilling',
             'USD' => 'united-states-dollar',
             'UZS' => 'uzbekistani-som',
             'VEF' => 'venezuelan-bolívar',
@@ -888,7 +889,7 @@
                                         <x-installer::form.control-group.control
                                             type="select"
                                             name="app_currency"
-                                            ::value="envData.app_currency ?? 'USD'"
+                                            ::value="envData.app_currency ?? 'UGX'"
                                             :aria-label="trans('installer::app.installer.index.environment-configuration.default-currency')"
                                             rules="required"
                                             :label="trans('installer::app.installer.index.environment-configuration.default-currency')"
@@ -896,7 +897,7 @@
                                             <option value="" disabled>Select Currencies</option>
 
                                             @foreach ($currencies as $value => $label)
-                                                <option value="{{ $value }}" @if($value == 'USD') selected @endif>
+                                                <option value="{{ $value }}" @if($value == 'UGX') selected @endif>
                                                     @lang("installer::app.installer.index.environment-configuration.$label")
                                                 </option>
                                             @endforeach

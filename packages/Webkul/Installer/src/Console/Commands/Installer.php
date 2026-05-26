@@ -157,6 +157,7 @@ class Installer extends Command
         'TRY' => 'Turkish Lira',
         'TWD' => 'New Taiwan Dollar',
         'UAH' => 'Ukrainian Hryvnia',
+        'UGX' => 'Ugandan Shilling',
         'USD' => 'United States Dollar',
         'UZS' => 'Uzbekistani Som',
         'VEF' => 'Venezuelan Bolívar',
@@ -602,8 +603,8 @@ class Installer extends Command
         return [
             'default_locale' => $this->envDetails['APP_LOCALE'] ?? $this->getEnvVariable('APP_LOCALE', 'en'),
             'allowed_locales' => $this->envDetails['APP_ALLOWED_LOCALES'] ?? [$this->getEnvVariable('APP_LOCALE', 'en')],
-            'default_currency' => $this->envDetails['APP_CURRENCY'] ?? $this->getEnvVariable('APP_CURRENCY', 'USD'),
-            'allowed_currencies' => $this->envDetails['APP_ALLOWED_CURRENCIES'] ?? [$this->getEnvVariable('APP_CURRENCY', 'USD')],
+            'default_currency' => $this->envDetails['APP_CURRENCY'] ?? $this->getEnvVariable('APP_CURRENCY', 'UGX'),
+            'allowed_currencies' => $this->envDetails['APP_ALLOWED_CURRENCIES'] ?? [$this->getEnvVariable('APP_CURRENCY', 'UGX')],
             'skip_admin_creation' => true,
         ];
     }

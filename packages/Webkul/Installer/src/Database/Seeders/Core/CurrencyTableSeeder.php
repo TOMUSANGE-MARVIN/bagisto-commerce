@@ -71,6 +71,7 @@ class CurrencyTableSeeder extends Seeder
         'TRY' => '₺',
         'TWD' => 'NT$',
         'UAH' => '₴',
+        'UGX' => 'USh',
         'USD' => '$',
         'UZS' => 'сўм',
         'VEF' => 'Bs.F',
