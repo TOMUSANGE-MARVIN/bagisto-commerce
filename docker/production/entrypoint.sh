@@ -14,7 +14,7 @@ log() {
 # Determine database mode: internal (default) or external
 # ==========================================================================
 DB_HOST="${DB_HOST:-127.0.0.1}"
-DB_PORT="${DB_PORT:-3306}"
+DB_PORT="${DB_PORT:-3308}"
 DB_DATABASE="${DB_DATABASE:-bagisto}"
 DB_USERNAME="${DB_USERNAME:-bagisto}"
 DB_PASSWORD="${DB_PASSWORD:-bagisto}"

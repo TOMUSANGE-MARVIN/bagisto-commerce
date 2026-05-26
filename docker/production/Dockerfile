@@ -46,6 +46,10 @@ RUN apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update \
         unzip \
     && add-apt-repository ppa:ondrej/php -y \
     && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update \
+    # Pre-configure MariaDB to use port 3308 so post-install start won't conflict
+    # with any existing MySQL/MariaDB on port 3306 (Coolify host or otherwise)
+    && mkdir -p /etc/mysql/conf.d \
+    && printf '[mysqld]\nport = 3308\nbind-address = 127.0.0.1\n' > /etc/mysql/conf.d/bagisto.cnf \
     && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install -y \
         imagemagick \
         libmagickwand-dev \
@@ -112,7 +116,7 @@ RUN composer install \
 RUN cp .env.example .env \
     && sed -i 's/^APP_DEBUG=.*/APP_DEBUG=false/' .env \
     && sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env \
-    && sed -i 's/^DB_PORT=.*/DB_PORT=3306/' .env \
+    && sed -i 's/^DB_PORT=.*/DB_PORT=3308/' .env \
     && sed -i 's/^DB_DATABASE=.*/DB_DATABASE=bagisto/' .env \
     && sed -i 's/^DB_USERNAME=.*/DB_USERNAME=bagisto/' .env \
     && sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=bagisto/' .env \

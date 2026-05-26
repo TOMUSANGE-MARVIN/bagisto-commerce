@@ -7,7 +7,7 @@ cd "$APP_DIR"
 log() { echo "[bagisto-runtime-install] $(date '+%Y-%m-%d %H:%M:%S') $*"; }
 
 DB_HOST="${DB_HOST:-127.0.0.1}"
-DB_PORT="${DB_PORT:-3306}"
+DB_PORT="${DB_PORT:-3308}"
 DB_DATABASE="${DB_DATABASE:-bagisto}"
 DB_USERNAME="${DB_USERNAME:-bagisto}"
 DB_PASSWORD="${DB_PASSWORD:-bagisto}"
@@ -36,7 +36,8 @@ if use_internal_db; then
     log "Starting temporary MariaDB for installation..."
     mysqld --user=mysql --datadir=/var/lib/mysql \
         --pid-file=/run/mysqld/mysqld.pid \
-        --socket=/run/mysqld/mysqld.sock &
+        --socket=/run/mysqld/mysqld.sock \
+        --port=3308 &
     MYSQL_PID=$!
 
     log "Waiting for MariaDB to be ready..."
