@@ -34,16 +34,12 @@ RUN set -eux; \
 # System packages + Nginx + Supervisor
 # ---------------------------------------------------------------------------
 RUN apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update \
-    && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install -y \
+    && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install -y --no-install-recommends \
         apt-transport-https \
         ca-certificates \
         curl \
         gnupg \
-        software-properties-common \
         unzip \
-    && add-apt-repository ppa:ondrej/php -y \
-    && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update \
-    && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install -y \
         imagemagick \
         libmagickwand-dev \
         nginx \
@@ -51,10 +47,10 @@ RUN apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update \
     && rm -rf /var/lib/apt/lists/*
 
 # ---------------------------------------------------------------------------
-# PHP 8.3 extensions (from ondrej/php PPA)
+# PHP 8.3 extensions (Ubuntu 24.04 repositories)
 # ---------------------------------------------------------------------------
 RUN apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update \
-    && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install -y \
+    && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install -y --no-install-recommends \
         php${PHP_VERSION}-bcmath \
         php${PHP_VERSION}-calendar \
         php${PHP_VERSION}-cli \
@@ -63,7 +59,7 @@ RUN apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update \
         php${PHP_VERSION}-fpm \
         php${PHP_VERSION}-gd \
         php${PHP_VERSION}-gmp \
-        php${PHP_VERSION}-imagick \
+        php-imagick \
         php${PHP_VERSION}-intl \
         php${PHP_VERSION}-mbstring \
         php${PHP_VERSION}-mysql \
