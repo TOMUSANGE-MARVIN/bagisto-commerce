@@ -1,116 +1,104 @@
 # =============================================================================
-# Bagisto Production Image (Single-stage)
-# Single container: Nginx + PHP 8.3 FPM + MySQL 8.0 + Supervisor
-#
-# Default mode  : Internal MySQL (ready-to-boot, Docker Hub style)
-# Override mode : Set DB_HOST to an external address to skip internal MySQL
-#
-# Bagisto is FULLY INSTALLED at build time — migrations, seeding, and all.
-# The image boots instantly with no first-run setup needed.
+# Bagisto Production Image
+# Single container: Nginx + PHP 8.3 FPM + MariaDB + Supervisor
+# MariaDB used instead of MySQL — identical protocol, better Docker support
 # =============================================================================
 
 FROM ubuntu:24.04
 
-ARG BAGISTO_VERSION=v2.4.4
 ARG PHP_VERSION=8.3
+ARG NODE_VERSION=20
+
+ARG ADMIN_NAME=Administrator
+ARG ADMIN_EMAIL=admin@example.com
+ARG ADMIN_PASSWORD=bagisto123
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
+# ---------------------------------------------------------------------------
+# Use reliable HTTP mirror (avoids network timeouts during build)
+# ---------------------------------------------------------------------------
+RUN set -eux; \
+    printf 'Acquire::ForceIPv4 "true";\nAcquire::Retries "10";\nAcquire::http::Timeout "30";\n' \
+        > /etc/apt/apt.conf.d/99bagisto-network; \
+    for f in /etc/apt/sources.list /etc/apt/sources.list.d/*.list \
+              /etc/apt/sources.list.d/*.sources; do \
+        [ -f "$f" ] || continue; \
+        sed -i 's|https://archive.ubuntu.com/ubuntu|http://us.archive.ubuntu.com/ubuntu|g' "$f"; \
+        sed -i 's|http://archive.ubuntu.com/ubuntu|http://us.archive.ubuntu.com/ubuntu|g' "$f"; \
+        sed -i 's|https://security.ubuntu.com/ubuntu|http://security.ubuntu.com/ubuntu|g' "$f"; \
+    done
 
 # ---------------------------------------------------------------------------
-# System packages + PHP PPA + MySQL 8.0
+# System packages + MariaDB + Nginx + Supervisor
+# policy-rc.d=exit 0 is set once and NEVER restored
 # ---------------------------------------------------------------------------
-RUN apt-get update && apt-get install -y \
+RUN apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update \
+    && printf '#!/bin/sh\nexit 0\n' > /usr/sbin/policy-rc.d \
+    && chmod +x /usr/sbin/policy-rc.d \
+    && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install -y \
         apt-transport-https \
         ca-certificates \
         curl \
-        git \
         gnupg \
         software-properties-common \
         unzip \
     && add-apt-repository ppa:ondrej/php -y \
-    && apt-get update && apt-get install -y \
+    && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update \
+    && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install -y \
         imagemagick \
-        libfreetype6-dev \
-        libgmp-dev \
-        libicu-dev \
-        libjpeg-turbo8-dev \
         libmagickwand-dev \
-        libpng-dev \
-        libwebp-dev \
-        libzip-dev \
-        mysql-server \
+        mariadb-server \
         nginx \
         supervisor \
-        zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
-
 # ---------------------------------------------------------------------------
-# PHP 8.3 + extensions
+# PHP 8.3 extensions (from ondrej/php PPA)
 # ---------------------------------------------------------------------------
-RUN apt-get update && apt-get install -y \
+RUN apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update \
+    && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install -y \
         php${PHP_VERSION}-bcmath \
         php${PHP_VERSION}-calendar \
         php${PHP_VERSION}-cli \
         php${PHP_VERSION}-curl \
-        php${PHP_VERSION}-dev \
         php${PHP_VERSION}-exif \
         php${PHP_VERSION}-fpm \
         php${PHP_VERSION}-gd \
         php${PHP_VERSION}-gmp \
+        php${PHP_VERSION}-imagick \
         php${PHP_VERSION}-intl \
         php${PHP_VERSION}-mbstring \
         php${PHP_VERSION}-mysql \
-        php${PHP_VERSION}-pdo \
         php${PHP_VERSION}-soap \
         php${PHP_VERSION}-sockets \
         php${PHP_VERSION}-xml \
         php${PHP_VERSION}-zip \
-        php-pear \
     && rm -rf /var/lib/apt/lists/*
 
-
 # ---------------------------------------------------------------------------
-# Imagick PECL extension
+# Node.js (for Vite/Mix assets)
 # ---------------------------------------------------------------------------
-RUN pecl channel-update pecl.php.net \
-    && mkdir -p /tmp/imagick-build && cd /tmp/imagick-build \
-    && pecl download imagick \
-    && tar xzf imagick-*.tgz \
-    && cd imagick-* \
-    && phpize${PHP_VERSION} \
-    && ./configure --with-php-config=/usr/bin/php-config${PHP_VERSION} \
-    && make -j$(nproc) \
-    && make install \
-    && echo "extension=imagick.so" > /etc/php/${PHP_VERSION}/mods-available/imagick.ini \
-    && phpenmod -v ${PHP_VERSION} imagick \
-    && rm -rf /tmp/imagick-build
-
-
-# ---------------------------------------------------------------------------
-# Remove build-only packages
-# ---------------------------------------------------------------------------
-RUN apt-get purge -y php${PHP_VERSION}-dev php-pear \
-    && apt-get autoremove -y \
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 # ---------------------------------------------------------------------------
 # Composer
 # ---------------------------------------------------------------------------
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
-
 # ---------------------------------------------------------------------------
-# Clone Bagisto + Composer install
+# Application source (build context = repo root)
 # ---------------------------------------------------------------------------
 WORKDIR /var/www/bagisto
 
-RUN git clone --depth 1 --branch ${BAGISTO_VERSION} \
-        https://github.com/bagisto/bagisto.git . \
-    && composer install \
+COPY . .
+
+RUN composer install \
         --no-dev \
         --no-interaction \
         --prefer-dist \
@@ -118,9 +106,8 @@ RUN git clone --depth 1 --branch ${BAGISTO_VERSION} \
         --no-scripts \
     && rm -rf /root/.composer/cache
 
-
 # ---------------------------------------------------------------------------
-# Prepare .env with internal-MySQL defaults
+# .env defaults (overridden at runtime by entrypoint.sh)
 # ---------------------------------------------------------------------------
 RUN cp .env.example .env \
     && sed -i 's/^APP_DEBUG=.*/APP_DEBUG=false/' .env \
@@ -131,76 +118,50 @@ RUN cp .env.example .env \
     && sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=bagisto/' .env \
     && sed -i 's|^APP_URL=.*|APP_URL=http://localhost|' .env
 
-
-# ---------------------------------------------------------------------------
-# Install Bagisto at BUILD TIME
-#
-# 1. Initialize MySQL data directory
-# 2. Start MySQL temporarily
-# 3. Create database + user
-# 4. Generate APP_KEY
-# 5. Run migrations + seeding
-# 6. Create storage symlink
-# 7. Cache config/routes/views
-# 8. Shut down MySQL cleanly
-#
-# The MySQL data directory (/var/lib/mysql) is baked into this layer.
-# ---------------------------------------------------------------------------
-COPY docker/production/mysql-init.sql /docker-entrypoint-initdb.d/init.sql
-COPY docker/production/build-install.sh /tmp/build-install.sh
-RUN chmod +x /tmp/build-install.sh && bash /tmp/build-install.sh && rm /tmp/build-install.sh
-
-
 # ---------------------------------------------------------------------------
 # PHP configuration
 # ---------------------------------------------------------------------------
 COPY docker/production/php.ini /etc/php/${PHP_VERSION}/fpm/conf.d/99-production.ini
+COPY docker/production/php.ini /etc/php/${PHP_VERSION}/cli/conf.d/99-production.ini
 COPY docker/production/php-fpm.conf /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf
 
-
 # ---------------------------------------------------------------------------
-# Nginx configuration
+# Nginx
 # ---------------------------------------------------------------------------
 RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf
 COPY docker/production/nginx.conf /etc/nginx/conf.d/bagisto.conf
 
-
 # ---------------------------------------------------------------------------
-# Supervisor configuration
+# Supervisor
 # ---------------------------------------------------------------------------
 COPY docker/production/supervisord.conf /etc/supervisor/conf.d/bagisto.conf
 
-
 # ---------------------------------------------------------------------------
-# Runtime directories
+# Runtime directories + permissions
 # ---------------------------------------------------------------------------
-RUN mkdir -p /run/php /var/log/supervisor /var/log/bagisto
-
-
-# ---------------------------------------------------------------------------
-# Permissions
-# ---------------------------------------------------------------------------
-RUN chown -R www-data:www-data /var/www/bagisto \
+RUN mkdir -p /run/php /var/log/supervisor /var/log/bagisto \
+    && mkdir -p storage/framework/views storage/framework/cache/data \
+                storage/framework/sessions storage/logs bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache /var/log/bagisto \
     && chmod -R 775 storage bootstrap/cache \
     && find storage bootstrap/cache -type d -exec chmod g+s {} +
 
-
 # ---------------------------------------------------------------------------
-# Entrypoint
+# Entrypoint + runtime installer
 # ---------------------------------------------------------------------------
 COPY docker/production/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
+COPY docker/production/runtime-install.sh /usr/local/bin/runtime-install.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/runtime-install.sh
 
 # ---------------------------------------------------------------------------
-# Cleanup — remove git (not needed at runtime)
+# Cleanup
 # ---------------------------------------------------------------------------
-RUN apt-get purge -y git \
-    && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
+RUN apt-get autoremove -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 EXPOSE 80
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=5 \
+    CMD curl -fsS http://127.0.0.1/ || exit 1
+
+ENTRYPOINT ["bash", "/usr/local/bin/entrypoint.sh"]
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]

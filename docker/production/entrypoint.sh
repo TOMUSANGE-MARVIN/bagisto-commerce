@@ -76,6 +76,12 @@ if ! use_internal_mysql; then
     done
 fi
 
+# ==========================================================================
+# First-run installation (migrations, seeding, admin creation)
+# ==========================================================================
+log "Running runtime installation checks..."
+bash /usr/local/bin/runtime-install.sh
+
 log "Starting services via Supervisor..."
 
 # ==========================================================================
