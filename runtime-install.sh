@@ -79,4 +79,7 @@ else
     log "First-time installation complete."
 fi
 
+log "Ensuring storage symlink exists..."
+php artisan storage:link --force --no-interaction 2>/dev/null || true
+
 log "Runtime install checks complete."
