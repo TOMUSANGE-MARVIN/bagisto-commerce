@@ -251,22 +251,22 @@ return [
             'theme-customizations' => [
                 'bold-collections' => [
                     'content' => [
-                        'btn-title' => 'View Collections',
-                        'description' => 'Introducing Our New Bold Collections! Elevate your style with daring designs and vibrant statements. Explore striking patterns and bold colors that redefine your wardrobe. Get ready to embrace the extraordinary!',
-                        'title' => 'Get Ready for our new Bold Collections!',
+                        'btn-title' => 'Shop Now',
+                        'description' => 'Discover cutting-edge smartphones, powerful laptops, and premium audio gear. Whether you are upgrading your setup or finding your next everyday carry, our latest arrivals deliver performance and style in every device.',
+                        'title' => 'Power Up with Our Latest Tech!',
                     ],
 
-                    'name' => 'Bold Collections',
+                    'name' => 'Featured Electronics',
                 ],
 
                 'bold-collections-2' => [
                     'content' => [
-                        'btn-title' => 'View Collections',
-                        'description' => 'Our Bold Collections are here to redefine your wardrobe with fearless designs and striking, vibrant colors. From daring patterns to powerful hues, this is your chance to break away from the ordinary and step into the extraordinary.',
-                        'title' => 'Unleash Your Boldness with Our New Collection!',
+                        'btn-title' => 'Explore Smart Home',
+                        'description' => 'Transform your home with smart speakers, LED lighting, security cameras, and connected appliances. Control everything from your phone and enjoy a seamlessly automated home experience.',
+                        'title' => 'Smart Home. Smarter Living.',
                     ],
 
-                    'name' => 'Bold Collections',
+                    'name' => 'Smart Home',
                 ],
 
                 'book-tickets' => [
@@ -301,19 +301,19 @@ return [
 
                 'game-container' => [
                     'content' => [
-                        'sub-title-1' => 'Our Collections',
-                        'sub-title-2' => 'Our Collections',
-                        'title' => 'The game with our new additions!',
+                        'sub-title-1' => 'Phones & Accessories',
+                        'sub-title-2' => 'Laptops & Tablets',
+                        'title' => 'Shop by Category',
                     ],
 
-                    'name' => 'Game Container',
+                    'name' => 'Shop by Category',
                 ],
 
                 'image-carousel' => [
                     'name' => 'Image Carousel',
 
                     'sliders' => [
-                        'title' => 'Get Ready For New Collection',
+                        'title' => 'Explore Our Electronics',
                     ],
                 ],
 
@@ -335,7 +335,7 @@ return [
 
                 'offer-information' => [
                     'content' => [
-                        'title' => 'Get UPTO 40% OFF on your 1st order SHOP NOW',
+                        'title' => 'Get UPTO 40% OFF on Phones, Laptops & Accessories | SHOP NOW',
                     ],
 
                     'name' => 'Offer Information',
@@ -343,34 +343,34 @@ return [
 
                 'services-content' => [
                     'description' => [
-                        'emi-available-info' => 'No cost EMI available on all major credit cards',
+                        'emi-available-info' => 'No-cost EMI on all major credit & debit cards',
                         'free-shipping-info' => 'Enjoy free shipping on all orders',
-                        'product-replace-info' => 'Easy Product Replacement Available!',
+                        'product-replace-info' => '30-day hassle-free returns on all electronics',
                         'time-support-info' => 'Dedicated 24/7 support via chat and email',
                     ],
 
                     'name' => 'Services Content',
 
                     'title' => [
-                        'emi-available' => 'Emi Available',
+                        'emi-available' => 'EMI Available',
                         'free-shipping' => 'Free Shipping',
-                        'product-replace' => 'Product Replace',
+                        'product-replace' => 'Easy Returns',
                         'time-support' => '24/7 Support',
                     ],
                 ],
 
                 'top-collections' => [
                     'content' => [
-                        'sub-title-1' => 'Our Collections',
-                        'sub-title-2' => 'Our Collections',
-                        'sub-title-3' => 'Our Collections',
-                        'sub-title-4' => 'Our Collections',
-                        'sub-title-5' => 'Our Collections',
-                        'sub-title-6' => 'Our Collections',
-                        'title' => 'The game with our new additions!',
+                        'sub-title-1' => 'Smartphones',
+                        'sub-title-2' => 'Laptops',
+                        'sub-title-3' => 'Audio',
+                        'sub-title-4' => 'Smart Home',
+                        'sub-title-5' => 'Gaming',
+                        'sub-title-6' => 'Accessories',
+                        'title' => 'Explore Our Top Categories',
                     ],
 
-                    'name' => 'Top Collections',
+                    'name' => 'Top Categories',
                 ],
 
                 'womens-collection' => [
