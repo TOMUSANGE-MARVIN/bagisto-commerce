@@ -74,7 +74,9 @@ users_count=$(php -r "
 " 2>/dev/null || echo 0)
 
 if [ "${users_count:-0}" -gt 0 ]; then
-    log "Bagisto already installed (${users_count} admin user(s)). Skipping install."
+    log "Bagisto already installed (${users_count} admin user(s)). Running migrations only..."
+    php artisan migrate --force --no-interaction || true
+    log "Migrations complete."
 else
     log "Running first-time Bagisto installation (this may take a few minutes)..."
     timeout 1200 php artisan bagisto:install \
