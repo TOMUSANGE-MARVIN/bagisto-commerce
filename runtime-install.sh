@@ -16,6 +16,8 @@ ADMIN_NAME="${ADMIN_NAME:-Administrator}"
 ADMIN_EMAIL="${ADMIN_EMAIL:-admin@example.com}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-bagisto123}"
 
+APP_URL="${APP_URL:-https://www.mutindoexpress.com}"
+
 log "Waiting for external DB at ${DB_HOST}:${DB_PORT}..."
 for i in $(seq 1 120); do
     if php -r "
@@ -81,5 +83,23 @@ fi
 
 log "Ensuring storage symlink exists..."
 php artisan storage:link --force --no-interaction 2>/dev/null || true
+
+log "Patching APP_URL to ${APP_URL}..."
+sed -i "s|^APP_URL=.*|APP_URL=${APP_URL}|" .env
+
+log "Patching channel hostname in DB..."
+php -r "
+    try {
+        \$pdo = new PDO('mysql:host=${DB_HOST};port=${DB_PORT};dbname=${DB_DATABASE}', '${DB_USERNAME}', '${DB_PASSWORD}');
+        \$pdo->exec(\"UPDATE channels SET hostname='${APP_URL}' WHERE id=1\");
+        echo 'Channel hostname updated.' . PHP_EOL;
+    } catch (Throwable \$e) { echo 'Could not update channel hostname: ' . \$e->getMessage() . PHP_EOL; }
+" 2>/dev/null || true
+
+log "Recreating installed flag..."
+touch storage/installed
+
+log "Clearing config cache to pick up patched .env..."
+php artisan config:clear --no-interaction 2>/dev/null || true
 
 log "Runtime install checks complete."
