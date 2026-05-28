@@ -110,9 +110,6 @@ class ThemeCustomizationTableSeeder extends Seeder
                 ],
             ]);
 
-        // Set theme code for all seeded customizations to the electronics theme
-        DB::table('theme_customizations')->update(['theme_code' => 'electronics']);
-
         $locales = $parameters['allowed_locales'] ?? [$defaultLocale];
 
         foreach ($locales as $locale) {

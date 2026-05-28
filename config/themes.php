@@ -10,25 +10,13 @@ return [
     |
     */
 
-    'shop-default' => 'electronics',
+    'shop-default' => 'default',
 
     'shop' => [
         'default' => [
             'name' => 'Default',
             'assets_path' => 'public/themes/shop/default',
             'views_path' => 'resources/themes/default/views',
-
-            'vite' => [
-                'hot_file' => 'shop-default-vite.hot',
-                'build_directory' => 'themes/shop/default/build',
-                'package_assets_directory' => 'src/Resources/assets',
-            ],
-        ],
-
-        'electronics' => [
-            'name' => 'Electronics',
-            'assets_path' => 'public/themes/shop/default',
-            'views_path' => 'resources/themes/electronics/views',
 
             'vite' => [
                 'hot_file' => 'shop-default-vite.hot',
