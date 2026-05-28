@@ -84,8 +84,9 @@ fi
 log "Ensuring storage symlink exists..."
 php artisan storage:link --force --no-interaction 2>/dev/null || true
 
-log "Patching APP_URL to ${APP_URL}..."
+log "Patching APP_URL to ${APP_URL} and STORAGE_URL..."
 sed -i "s|^APP_URL=.*|APP_URL=${APP_URL}|" .env
+grep -q '^STORAGE_URL=' .env && sed -i "s|^STORAGE_URL=.*|STORAGE_URL=${APP_URL}|" .env || echo "STORAGE_URL=${APP_URL}" >> .env
 
 log "Patching channel hostname in DB..."
 php -r "
