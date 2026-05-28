@@ -6,6 +6,7 @@ use Barryvdh\Debugbar\Facades\Debugbar;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\ParallelTesting;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -38,5 +39,9 @@ class AppServiceProvider extends ServiceProvider
         ParallelTesting::setUpTestDatabase(function (string $database, int $token) {
             Artisan::call('db:seed');
         });
+
+        // Register the electronics theme namespace so ThemeViewFinder can
+        // prepend our custom views before falling back to the 'shop' package views.
+        View::addNamespace('electronics', resource_path('themes/electronics/views'));
     }
 }
