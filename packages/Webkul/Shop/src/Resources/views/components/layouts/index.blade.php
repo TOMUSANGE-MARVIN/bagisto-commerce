@@ -170,6 +170,28 @@
 
         {!! view_render_event('bagisto.shop.layout.vue-app-mount.after') !!}
 
+        <script>
+            (function () {
+                var lazyImages = document.querySelectorAll('img.lazy[data-src]');
+                if (!lazyImages.length) return;
+                if ('IntersectionObserver' in window) {
+                    var observer = new IntersectionObserver(function (entries) {
+                        entries.forEach(function (entry) {
+                            if (entry.isIntersecting) {
+                                var img = entry.target;
+                                img.src = img.dataset.src;
+                                img.classList.remove('lazy');
+                                observer.unobserve(img);
+                            }
+                        });
+                    }, { rootMargin: '200px' });
+                    lazyImages.forEach(function (img) { observer.observe(img); });
+                } else {
+                    lazyImages.forEach(function (img) { img.src = img.dataset.src; });
+                }
+            })();
+        </script>
+
         <script type="text/javascript">
             {!! core()->getConfigData('general.content.custom_scripts.custom_javascript') !!}
         </script>
