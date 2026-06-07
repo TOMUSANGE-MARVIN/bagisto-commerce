@@ -517,7 +517,6 @@
                         if (stored) {
                             this.categories = JSON.parse(stored);
                             this.isLoading = false;
-                            return;
                         }
 
                     } catch (e) {}
