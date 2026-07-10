@@ -141,18 +141,7 @@
         {!! view_render_event('bagisto.shop.layout.footer.footer_text.before') !!}
 
         <p class="text-sm text-zinc-600 max-md:text-center">
-            @php
-                $footerCopyrightContent = core()->getConfigData('general.content.footer.copyright_content')
-                    ?: trans('shop::app.components.layouts.footer.footer-text', ['current_year' => date('Y')]);
-
-                $footerCopyrightContent = preg_replace(
-                    '/\bKicowebdesign\b/',
-                    '<a href="https://kicowebdesign.com" target="_blank" rel="noopener noreferrer">Kicowebdesign</a>',
-                    $footerCopyrightContent
-                );
-            @endphp
-
-            {!! $footerCopyrightContent !!}
+            &copy; Copyright {{ date('Y') }}, <a href="https://kicowebdesign.com" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Kicowebdesign</a>, <a href="https://marvwebdesign.com" target="_blank" rel="dofollow" style="color: inherit; text-decoration: underline;">marvwebdesign</a>. All rights reserved.
         </p>
 
         {!! view_render_event('bagisto.shop.layout.footer.footer_text.after') !!}
